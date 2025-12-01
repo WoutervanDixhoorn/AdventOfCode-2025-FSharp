@@ -1,6 +1,7 @@
-open System
+#load "../Common/utils.fsx"
 
-let wrap n = ((n % 100) + 100) % 100
+open Utils
+open System
 
 let processLinePartOne (currentDial: int, currentCount: int) (line: string): int * int =
     let direction = line.[0..0]
@@ -36,28 +37,21 @@ let processLinePartTwo (currentDial: int, currentCount: int) (line: string): int
         (nextDial, currentCount + hits)
     | _ -> (currentDial, currentCount)
 
-let readContent () =
-    Seq.initInfinite (fun _ -> Console.ReadLine())
-        |> Seq.takeWhile (fun line -> line <> null)
-        |> Seq.map (fun line -> line.Replace("\uFEFF", "").Trim())
-        |> Seq.filter(fun line -> not (String.IsNullOrEmpty(line)))
-        |> Seq.toList
-     
-let main () =
-    let input = readContent()
 
-    let (finalDial1, finalCount1 )= 
-        input
-        |> Seq.fold processLinePartOne (50, 0)
-        
-    let (finalDial2, finalCount2 )= 
-        input
-        |> Seq.fold processLinePartTwo (50, 0)
+//Run using: Get-Content input.txt | dotnet fsi main.fsx
+let input = readInput()
 
-    printfn "---"
-    printfn "Final Result Part One: %d" finalCount1
-    printfn "---"
-    printfn "Final Result Part Two: %d" finalCount2
+let (finalDial1, finalCount1 )= 
+    input
+    |> Seq.fold processLinePartOne (50, 0)
+    
+let (finalDial2, finalCount2 )= 
+    input
+    |> Seq.fold processLinePartTwo (50, 0)
 
-main()
+printfn "---"
+printfn "Final Result Part One: %d" finalCount1
+printfn "---"
+printfn "Final Result Part Two: %d" finalCount2
+
     
