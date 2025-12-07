@@ -18,7 +18,7 @@ These solutions are built to take input via the command line pipe.
 
 **Windows (PowerShell)**
 ```powershell
-Get-Content input.txt > dotnet fsi main.fsx
+Get-Content input.txt | dotnet fsi main.fsx
 ```
 
 **Linux (Bash)**
