@@ -1,10 +1,8 @@
 #load "../Common/utils.fsx"
+open Utils
 
 #r "nuget: FParsec"
 open FParsec
-
-open Utils
-open System.Collections.Generic
 
 //Run using: Get-Content input.txt | dotnet fsi main.fsx
 let input = readInput()
@@ -56,7 +54,6 @@ let machines =
         }
     )
 
-//Calculate the shortest combination of buttonEffects to get lights as an awnser
 let findButtonPressesForLight machine =
     let rec findButtonPressesRec buttonIndex currentLights buttonPresses =
         match currentLights with 
@@ -81,4 +78,37 @@ let partOne =
     ) |>
     List.sum
 
-printf "Part one: %d\n" partOne
+printf "Part one: %d\n" partOne 
+
+#r "nuget: Google.OrTools"
+open Google.OrTools.LinearSolver
+
+let calcMachineOrTools machine =
+    let solver = Solver.CreateSolver("SCIP")
+    let integerVars = 
+        machine.Buttons |> List.mapi (fun i _ -> 
+            solver.MakeIntVar(0.0, infinity, sprintf "Button_%d" i)
+        )
+
+    machine.JReq |> List.iteri (fun jIdx joltage -> 
+        let target = float joltage
+        let constraintObj = solver.MakeConstraint(target, target)
+        machine.Buttons |> List.iteri (fun bIdx button ->
+            let buttonEffect = button.[jIdx]
+            constraintObj.SetCoefficient(integerVars.[bIdx], buttonEffect)
+        )
+    )
+
+    let objective = solver.Objective()
+    integerVars |> List.iter (fun var -> 
+        objective.SetCoefficient(var, 1.0)
+    )
+    objective.SetMinimization()
+
+    match solver.Solve() with
+    | Solver.ResultStatus.OPTIMAL -> integerVars |> List.map (fun v -> int (v.SolutionValue())) |> List.sum
+    | _ -> failwith "No solution"
+
+let partTwo = machines |> List.map calcMachineOrTools |> List.sum
+
+printfn "Part two: %A\n" partTwo
